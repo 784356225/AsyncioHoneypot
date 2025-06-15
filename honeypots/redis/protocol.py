@@ -4,15 +4,24 @@ Redis协议层
 处理Redis协议解析和响应格式化
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TYPE_CHECKING
 from tools.logger import get_logger
+
+if TYPE_CHECKING:
+    from honeypots.redis.transport import RedisTransport
 
 
 class RedisProtocol:
     """Redis协议处理器"""
-
-    def __init__(self):
+    def __init__(self, transport: 'RedisTransport'):
+        self.transport = transport
         self.logger = get_logger()
+
+
+    async def send_data(self, data: str|bytes):
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+        await self.transport.write_data(data)
     
     def parse_command(self, data: bytes) -> Optional[List[str]]:
         """
